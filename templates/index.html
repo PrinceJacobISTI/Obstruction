@@ -7,14 +7,57 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Live Fire Escape Monitoring</h1>
+    <h1>Live Obstruction Detection</h1>
     <div class="video-container">
-        <img src="{{ url_for('video_feed') }}" id="video-feed">
+        <img src="{{ url_for('video_feed') }}" alt="Live Video Feed">
     </div>
+    
+    <button onclick="enableSound()">🔊 Enable Sound Alerts</button>
+
+    <div id="alert-box" class="hidden">⚠️ Obstruction Detected!</div>
+
+    <!-- Sound file -->
+    <audio id="alert-sound">
+        <source src="{{ url_for('static', filename='alert.mp3') }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
     <script>
-        setInterval(() => {
-            document.getElementById('video-feed').src = "{{ url_for('video_feed') }}" + "?t=" + new Date().getTime();
-        }, 1000);
+        let obstructionAlertShown = false;  // Prevent repeated sounds
+        let alertSound = document.getElementById("alert-sound");
+        let soundEnabled = false;  // Initially, sound is disabled
+
+        function enableSound() {
+            soundEnabled = true;
+            alert("🔊 Sound Alerts Enabled!");
+        }
+
+        function checkForAlert() {
+            fetch('/alert-status')
+                .then(response => response.json())
+                .then(data => {
+                    let alertBox = document.getElementById('alert-box');
+
+                    if (data.obstruction) {
+                        alertBox.classList.remove('hidden');
+
+                        if (!obstructionAlertShown) {
+                            if (soundEnabled) {
+                                alertSound.play();  // Play sound only if enabled
+                            }
+                            obstructionAlertShown = true;
+                        }
+                    } else {
+                        alertBox.classList.add('hidden');
+                        obstructionAlertShown = false;  // Reset alert flag
+
+                        alertSound.pause();  // Stop sound if obstruction is cleared
+                        alertSound.currentTime = 0;  // Reset sound position
+                    }
+                });
+        }
+
+        setInterval(checkForAlert, 2000);  // Check every 2 seconds
     </script>
 </body>
 </html>
