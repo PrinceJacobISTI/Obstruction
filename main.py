@@ -35,7 +35,7 @@ def generate_frames():
                 detected = True  # Obstruction detected
                 break
 
-        obstruction_detected = detected  # Update status
+        obstruction_detected = detected  # Update status tite
 
         # Draw the fixed bounding box on the frame
         color = (0, 0, 255) if obstruction_detected else (0, 255, 0)  # Red if blocked, Green if clear
